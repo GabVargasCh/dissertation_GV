@@ -1,0 +1,17 @@
+#Total number of regressions to be calculated
+nummuestras <- 100 
+
+#Enables the cycle to calculate 100 regressions
+> for (i in 1:nummuestras){ 
+
+#Reads the file with sample number i
+data1 <- read.csv(file.choose(), header=T)
+
+#Logistic regression using 6 dependent variables
++ myLogit < -
+glm(PAGADAS~ESTADO+SECTOR+ESTRATO+MONTO.DE.CRÉDITO+PLAZO+TASA.REAL,family=binomial(logit), data=data1)
+
+#Creates a data frame to display confusion matrix and creates a new csv file with the result
++ DF <- data.frame(response = data1$PAGADAS, predictes = round(fitted(myLogit),0))
++ TC <- xtabs(~predictes + response, data=DF)
++ write.csv(TC, file=paste("TCM", i ,".csv", sep=""))}
