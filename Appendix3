@@ -1,0 +1,96 @@
+Sub Muestreo()
+//Variable declaration
+Dim My_Range As Range 
+Dim CalcMode As Long
+Dim ViewMode As Long
+Dim FilterCriteria As String
+Dim CCount As Long
+Dim WSNew As Worksheet
+Dim sheetName As String
+Dim rng As Range
+Dim aba As Integer
+//Counter
+aba = 1 
+
+//Main do-while statement to generate 100 random samples
+Do While aba < 100 
+
+//Activates the spreadsheet that contains the data set used to generate random samples using random numbers assigned to each observation through the function RAND() and random number sorting through the function RANK.EQ().
+Sheets(1).Activate ActiveSheet.Calculate
+
+//Calculates a random number and its hierarchy for every observation on the data set. The function RAND() is already stated in cell L2
+Range("L2:M138954").Select
+Selection.FillDown 
+
+//Paste the result of the functions as values leaving the functions only for the first observation in order to speed up the macro execution
+Range("L3:M138954").Select
+Selection.Copy   
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _:=False, Transpose:=False 
+
+//Enables the range of cells that will be used for sampling process
+Set My_Range = Range("A1:M" & LastRow(Sheet1))
+My_Range.Parent.Select 
+
+With Application
+        CalcMode = .Calculation
+        .Calculation = xlCalculationManual
+        .ScreenUpdating = False
+        .EnableEvents = False
+End With
+
+ViewMode = ActiveWindow.View
+ActiveWindow.View = xlNormalView
+ActiveSheet.DisplayPageBreaks = False
+
+My_Range.Parent.AutoFilterMode = False
+
+//Filters 13,271 observations with numbers included in the interval [1,13271] according to the function RANK.EQ()
+My_Range.AutoFilter Field:=13, Criteria1:=">=1", Operator:=xlAnd, Criteria2:="<=13271"
+
+
+//Creates a new spreadsheet called “Muestra i”
+Set WSNew = Worksheets.Add(After:=Sheets(ActiveSheet.Index))
+sheetName = "Muestra" & aba
+
+// Displays error message in case the new spreadsheet’s name is incorrect.
+On Error Resume Next
+WSNew.Name = sheetName
+If Err.Number > 0 Then
+    MsgBox "Change the name of sheet : " & WSNew.Name & _
+    "manually after the macro is ready. The sheet name" & _
+    "you fill in already exists or you use characters" & _
+    "that are not allowed in a sheet name."
+    Err.Clear
+End If
+On Error GoTo 0
+
+//Copies the cells that were previously filtered (13,271 observation sample) 
+My_Range.Parent.AutoFilter.Range.Copy 
+
+//Paste the new sample as value in the new spreadsheet 
+With WSNew.Range("A1")
+        .PasteSpecial Paste:=8
+        .PasteSpecial xlPasteValues
+        .PasteSpecial xlPasteFormats
+        Application.CutCopyMode = False
+        .Select
+End With 
+
+My_Range.Parent.AutoFilterMode = False
+
+My_Range.Parent.Select
+ActiveWindow.View = ViewMode
+If Not WSNew Is Nothing Then WSNew.Select
+With Application
+    .ScreenUpdating = True
+    .EnableEvents = True
+    .Calculation = CalcMode
+End With
+
+//Counter increases in one unit
+aba = aba + 1 
+
+//End of loop. The method repeats until aba=100
+Loop 
+End Sub
+
