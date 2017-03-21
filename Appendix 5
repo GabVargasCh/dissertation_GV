@@ -1,0 +1,18 @@
+#Total number of regressions to be calculated
+nummuestras <- 100 
+
+#Enables the cycle to calculate 100 conditional inference trees 
+> for (i in 1:nummuestras){ 
+data1 <- read.csv(file.choose(), header=T)
+
+#Dummy variable validation
+data1$PAGADAS <- factor(data1$PAGADAS)
+class(data1$PAGADAS)
+
+#Generates conditional inference tree using 5 dependent variables
+myCIF <-PAGADAS ~ ESTRATO+ SECTOR + TASA.REAL + PLAZO + ESTADO
+model <- ctree(myCIF, data=data1)
+
+#Generates and prints confusion matrix
+predict <- predict(model,data1,type="response")
+table (predict,data1$PAGADAS)}
